@@ -1,9 +1,5 @@
 # OpenFaas Python3 FastAPI Template
 
-## NOT MAINTAINED
-
-***This project is not actively maintained.  If you are considering using it please take a look at https://github.com/JustinGuese/openfaas-python3-fastapi-template as a possible alternative.***
-
 ## Overview
 
 A Python [FastAPI](https://github.com/tiangolo/fastapi) template that make use of the incubator project [of-watchdog](https://github.com/openfaas-incubator/of-watchdog).
@@ -18,7 +14,7 @@ Templates available in this repository:
 
 ## Downloading the templates
 ```
-$ faas template pull https://github.com/loudsquelch/openfaas-python3-fastapi-template
+$ faas template pull https://github.com/martinchapman/openfaas-python3-fastapi-template
 ```
 
 ## Using the python3-fastapi templates

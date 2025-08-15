@@ -4,7 +4,7 @@ import json
 
 from fastapi import FastAPI
 from fastapi.openapi.utils import get_openapi
-from function import handler
+from function import handler, handler_types, config
 from starlette import status
 from starlette.responses import HTMLResponse
 
@@ -105,13 +105,13 @@ async def swagger_ui_html():
 @app.post(
     "/",
     status_code=status.HTTP_200_OK,
-    response_model=handler.ResponseModel,
-    summary=handler.FUNCTION_SUMMARY,
-    response_description=handler.FUNCTION_RESPONSE_DESC,
+    response_model=handler_types.ResponseModel,
+    summary=config.FUNCTION_SUMMARY,
+    response_description=config.FUNCTION_RESPONSE_DESC,
 )
 def handle_request(
     *,
-    req: handler.RequestModel,
+    req: handler_types.RequestModel,
 ):
     return handler.handle(req)
 

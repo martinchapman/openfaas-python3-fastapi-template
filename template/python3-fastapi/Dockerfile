@@ -1,11 +1,19 @@
-FROM openfaas/of-watchdog:0.7.2 as watchdog
-FROM python:3.7-alpine3.12
+ARG PYTHON_VERSION=3.12
+FROM --platform=${TARGETPLATFORM:-linux/amd64} ghcr.io/openfaas/of-watchdog:0.10.7 AS watchdog
+FROM --platform=${TARGETPLATFORM:-linux/amd64} python:${PYTHON_VERSION}-alpine AS build
 
 COPY --from=watchdog /fwatchdog /usr/bin/fwatchdog
 RUN chmod +x /usr/bin/fwatchdog
 
+ARG UPGRADE_PACKAGES
 ARG ADDITIONAL_PACKAGE
-RUN apk --no-cache add musl-dev gcc make ${ADDITIONAL_PACKAGE}
+# Alternatively use ADD https:// (which will not be cached by Docker builder)
+
+RUN if [ "${UPGRADE_PACKAGES}" = "true" ] || [ "${UPGRADE_PACKAGES}" = "1" ]; then apk --no-cache upgrade; fi && \
+    apk --no-cache add ${ADDITIONAL_PACKAGE} tzdata
+
+ENV TZ="Europe/London"
+RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
 # Add non root user
 RUN addgroup -S app && adduser app -S -G app
@@ -17,27 +25,36 @@ ENV PATH=$PATH:/home/app/.local/bin
 
 WORKDIR /home/app/
 
-COPY requirements.txt   .
+COPY --chown=app:app index.py           .
+COPY --chown=app:app requirements.txt   .
 USER root
-RUN pip install -r requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Build the function directory and install any user-specified components
 USER app
-COPY index.py           .
 
 RUN mkdir -p function
 RUN touch ./function/__init__.py
 WORKDIR /home/app/function/
-COPY function/requirements.txt	.
-RUN pip install --user -r requirements.txt
+COPY --chown=app:app function/requirements.txt	.
+RUN pip install --no-cache-dir --user -r requirements.txt
 
+# install function code
+USER root
+COPY --chown=app:app function/   .
+
+FROM build AS test
+ARG TEST_COMMAND=tox
+ARG TEST_ENABLED=true
+RUN [ "$TEST_ENABLED" = "false" ] && echo "skipping tests" || eval "$TEST_COMMAND"
+
+FROM build AS ship
 WORKDIR /home/app/
 
-USER root
-COPY function function
-RUN chown -R app:app ./
+# configure server and healthcheck
 USER app
 
 ENV fprocess="uvicorn index:app --host 0.0.0.0 --port 8000"
-
 ENV cgi_headers="true"
 ENV mode="http"
 ENV upstream_url="http://127.0.0.1:8000"
