@@ -1,7 +1,7 @@
-from fastapi import HTTPException
+from fastapi import Request, HTTPException
 from .handler_types import RequestModel, ResponseModel
 
-async def handle(req: RequestModel) -> ResponseModel:
+async def handle(request: Request, req: RequestModel) -> ResponseModel:
     """handle a request to the function
     Args:
         req (dict): request body

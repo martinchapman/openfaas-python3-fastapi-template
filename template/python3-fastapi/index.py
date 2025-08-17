@@ -2,7 +2,7 @@
 # Licensed under the MIT license. See LICENSE file in the project root for full license information.
 import json
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.openapi.utils import get_openapi
 from function import handler, handler_types, config
 from starlette import status
@@ -112,9 +112,10 @@ async def swagger_ui_html():
 )
 async def handle_request(
     *,
-    req: handler_types.RequestModel,
+    request: Request,
+    req: handler_types.RequestModel = None,
 ):
-    return await handler.handle(req)
+    return await handler.handle(request, req)
 
 
 @app.get("/swagger.json", include_in_schema=False)
