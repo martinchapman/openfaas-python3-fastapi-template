@@ -109,11 +109,11 @@ async def swagger_ui_html():
     summary=config.FUNCTION_SUMMARY,
     response_description=config.FUNCTION_RESPONSE_DESC,
 )
-def handle_request(
+async def handle_request(
     *,
     req: handler_types.RequestModel,
 ):
-    return handler.handle(req)
+    return await handler.handle(req)
 
 
 @app.get("/swagger.json", include_in_schema=False)
