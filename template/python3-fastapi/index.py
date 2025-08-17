@@ -89,7 +89,7 @@ app.openapi = custom_openapi
 
 
 @app.get(
-    "/",
+    "/docs",
     response_class=HTMLResponse,
     summary="Function Swagger UI Doc",
     response_description="Swagger UI documentation rendered as HTML (for consumption directly in a web browser)",
@@ -102,8 +102,9 @@ async def swagger_ui_html():
     return openapi_html
 
 
-@app.post(
+@app.api_route(
     "/",
+    methods=['GET', 'POST'],
     status_code=status.HTTP_200_OK,
     response_model=handler_types.ResponseModel,
     summary=config.FUNCTION_SUMMARY,
